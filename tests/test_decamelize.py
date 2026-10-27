@@ -111,3 +111,26 @@ def test_decamelize_dict_list():
     ]
 
     assert actual == expected, "{} != {}".format(actual, expected)
+
+
+@pytest.mark.parametrize(
+    "punctuation", list(".,<>/?;:'\"[]{}\\|`~!@#$%^&*()=+")
+)
+def test_punctuation_is_already_a_word_boundary(punctuation):
+    assert (
+        humps.decamelize("foo" + punctuation + "Bar")
+        == "foo" + punctuation + "bar"
+    )
+
+
+def test_existing_separators_are_not_duplicated():
+    assert humps.decamelize("foo_Bar") == "foo_bar"
+    assert humps.decamelize("foo-Bar") == "foo-bar"
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [("fooBar", "foo_bar"), ("åBar", "å_bar"), ("foo1Bar", "foo1bar")],
+)
+def test_adjacent_letter_and_digit_boundaries(text, expected):
+    assert humps.decamelize(text) == expected

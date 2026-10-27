@@ -117,6 +117,7 @@ def test_decamelize_dict_list():
     "punctuation", list(".,<>/?;:'\"[]{}\\|`~!@#$%^&*()=+")
 )
 def test_punctuation_is_already_a_word_boundary(punctuation):
+    """Treat punctuation as an existing boundary."""
     assert (
         humps.decamelize("foo" + punctuation + "Bar")
         == "foo" + punctuation + "bar"
@@ -124,6 +125,7 @@ def test_punctuation_is_already_a_word_boundary(punctuation):
 
 
 def test_existing_separators_are_not_duplicated():
+    """Keep existing separators single during case conversion."""
     assert humps.decamelize("foo_Bar") == "foo_bar"
     assert humps.decamelize("foo-Bar") == "foo-bar"
 
@@ -133,4 +135,13 @@ def test_existing_separators_are_not_duplicated():
     [("fooBar", "foo_bar"), ("åBar", "å_bar"), ("foo1Bar", "foo1bar")],
 )
 def test_adjacent_letter_and_digit_boundaries(text, expected):
+    """Preserve established letter and ASCII-digit splits."""
     assert humps.decamelize(text) == expected
+
+
+@pytest.mark.parametrize("digit", ["\u0662", "\u09e8", "\u0968"])
+def test_non_ascii_digit_boundaries_are_preserved(digit):
+    """Preserve existing uppercase boundaries after non-ASCII digits."""
+    assert humps.decamelize("foo{}Bar".format(digit)) == "foo{}_bar".format(
+        digit
+    )
